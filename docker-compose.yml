@@ -1,0 +1,26 @@
+services:
+  api:
+    image: phoenix-app:secure
+    container_name: phoenix-api
+    ports:
+      - "8080:5000"
+    environment:
+      # SABOTAGE 1 fix: index.js reads process.env.DATABASE_URI specifically.
+      # 'database' below is the service name, resolved via Docker's internal DNS.
+      - DATABASE_URI=mongodb://database:27017/phoenix
+    depends_on:
+      - database
+    restart: unless-stopped
+
+  database:
+    image: mongo:latest
+    container_name: phoenix-db
+    ports:
+      - "27017:27017"
+    volumes:
+      # SABOTAGE 2 fix: named volume so data survives `docker-compose down`
+      - mongo-data:/data/db
+    restart: unless-stopped
+
+volumes:
+  mongo-data:
